@@ -1328,6 +1328,7 @@ class _UserHomeState extends State<UserHome> with WindowListener {
                                                                           ),
                                                                         ],
                                                                       ),
+                                                                      if(product['expire_date'] != null)
                                                                       Row(
                                                                         children: [
                                                                           Text(
@@ -1351,11 +1352,11 @@ class _UserHomeState extends State<UserHome> with WindowListener {
                                                               color: Colors.blue,
                                                               onPressed: () async {
                                                                 var product1 = _productData[enteredBarcode];
-                                                                DateTime expireDate = DateTime.parse(product1['expire_date']);
+                                                                DateTime? expireDate = product1['expire_date']!=null ? DateTime.parse(product1['expire_date']) : null;
                                                                 DateTime today = DateTime.now();
 
                                                                 if (product1['quantity'] != '0') {
-                                                                  if (expireDate.isBefore(today) || expireDate.isAtSameMomentAs(today)) {
+                                                                  if (product1['expire_date'] != null && (expireDate!.isBefore(today) || expireDate.isAtSameMomentAs(today))) {
                                                                     bool? res = await showDialog<bool>(
                                                                       context: context,
                                                                       builder: (context) {
