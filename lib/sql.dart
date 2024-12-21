@@ -3,10 +3,18 @@ import 'dart:convert';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SQLService {
   static const storage = FlutterSecureStorage();
-  static String baseUrl = 'https://albayar.co/supermarket/';
+  static Future<String> baseUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? url = prefs.getString('url');
+
+    return 'https://$url/supermarket/'.replaceAll("\n", "");
+  }
+
 
   static Future<void> botSendMessage(String message) async {
     String? id = await retrieveChatID();
@@ -17,7 +25,7 @@ class SQLService {
     required String name,
     required String pass,
   }) async {
-    final url = Uri.parse('${baseUrl}market_login.php');
+    final url = Uri.parse('${await baseUrl()}market_login.php');
 
     // Data to send
     final data = {
@@ -50,7 +58,7 @@ class SQLService {
       return '';
     }
 
-    final url = Uri.parse('${baseUrl}user_login.php');
+    final url = Uri.parse('${await baseUrl()}user_login.php');
 
     // Data to send
     final data = {
@@ -152,7 +160,7 @@ class SQLService {
       return {'status': 'error', 'message': 'Market not found'};
     }
 
-    final url = Uri.parse('${baseUrl}get_products.php');
+    final url = Uri.parse('${await baseUrl()}get_products.php');
 
     // Data to send
     final data = {
@@ -185,7 +193,7 @@ class SQLService {
     required DateTime? expireDate,
   }) async {
     final marketName = await retrieveName();
-    final url = Uri.parse('${baseUrl}manage_products.php');
+    final url = Uri.parse('${await baseUrl()}manage_products.php');
     final formattedExpireDate = expireDate==null ? null : DateFormat('yyyy-MM-dd').format(expireDate);
 
     final data = {
@@ -215,7 +223,7 @@ class SQLService {
   }) async {
     final marketName = await retrieveName();
 
-    final url = Uri.parse('${baseUrl}manage_products.php');
+    final url = Uri.parse('${await baseUrl()}manage_products.php');
     final formattedExpireDate = expire==null ? null : DateFormat('yyyy-MM-dd').format(expire);
 
 
@@ -241,7 +249,7 @@ class SQLService {
   static Future<Map<String, dynamic>> deleteProduct(String barcode) async {
     final marketName = await retrieveName();
 
-    final url = Uri.parse('${baseUrl}manage_products.php');
+    final url = Uri.parse('${await baseUrl()}manage_products.php');
 
     final data = {
       'action': 'delete',
@@ -257,7 +265,7 @@ class SQLService {
   static Future<void> updateInfo(String title,String pass, String chat) async {
     final marketName = await retrieveName();
 
-    final url = Uri.parse('${baseUrl}update_market.php');
+    final url = Uri.parse('${await baseUrl()}update_market.php');
 
     final data = {
       'title': title,
@@ -280,7 +288,7 @@ class SQLService {
   static Future<void> decreaseQuantities(List<Map<String,dynamic>> scannedProducts, String username) async {
     final marketName = await retrieveName();
     final response = await http.post(
-      Uri.parse('${baseUrl}manage_products.php'),
+      Uri.parse('${await baseUrl()}manage_products.php'),
       body: {
         'action': 'decrease-quantity',
         'marketName': marketName,
@@ -298,7 +306,7 @@ class SQLService {
   }
 
   static Future<void> saveToPurchaseHistory(List<Map<String, dynamic>> scannedProducts) async {
-    final String url = '${baseUrl}save_to_history.php';
+    final String url = '${await baseUrl()}save_to_history.php';
     final marketName = await retrieveName();
     // Create the body of the request
     final Map<String, dynamic> body = {
@@ -335,7 +343,8 @@ class SQLService {
 
   static Future<bool> checkCode(String code) async {
     final response = await http.post(
-      Uri.parse('${baseUrl}check_activation_code.php'),
+      Uri.parse('${await baseUrl()}check_activation_code.php'),
+
       body: {
         "code": code
       },
@@ -359,7 +368,7 @@ class SQLService {
       return [];  // Return an empty list if market name is not found
     }
 
-    final url = Uri.parse('${baseUrl}get_sold_products_in_range.php'); // Update the URL to your PHP script
+    final url = Uri.parse('${await baseUrl()}get_sold_products_in_range.php'); // Update the URL to your PHP script
 
     // Data to send
     final data = {
@@ -393,7 +402,7 @@ class SQLService {
       return {'status': 'error', 'message': 'Market not found'};
     }
 
-    final url = Uri.parse('${baseUrl}get_users.php');  // PHP script URL
+    final url = Uri.parse('${await baseUrl()}get_users.php');  // PHP script URL
 
     // Data to send
     final data = {'marketName': marketName};
@@ -428,7 +437,7 @@ class SQLService {
       return {'status': 'error', 'message': 'Market not found'};
     }
 
-    final url = Uri.parse('${baseUrl}get_purchase_history.php'); // Update to the appropriate PHP script
+    final url = Uri.parse('${await baseUrl()}get_purchase_history.php'); // Update to the appropriate PHP script
 
     // Data to send
     final data = {
@@ -489,7 +498,7 @@ class SQLService {
   }
 
   static Future<Map<String, dynamic>> addUser(String name, String pass, int isAdmin) async {
-    final url = Uri.parse('${baseUrl}update_user.php');
+    final url = Uri.parse('${await baseUrl()}update_user.php');
     final marketName = await retrieveName();
     final response = await http.post(
       url,
@@ -512,7 +521,7 @@ class SQLService {
 
   // Method to remove a user
   static Future<Map<String, dynamic>> removeUser(int id) async {
-    final url = Uri.parse('${baseUrl}update_user.php');
+    final url = Uri.parse('${await baseUrl()}update_user.php');
     final marketName = await retrieveName();
 
     final response = await http.post(
@@ -535,7 +544,7 @@ class SQLService {
 
   // Method to update a user
   static Future<Map<String, dynamic>> updateUser(int id, String name, String pass, int isAdmin) async {
-    final url = Uri.parse('${baseUrl}update_user.php');
+    final url = Uri.parse('${await baseUrl()}update_user.php');
     final marketName = await retrieveName();
 
     final response = await http.post(

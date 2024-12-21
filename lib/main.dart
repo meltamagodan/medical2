@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supermarket/pages/code.dart';
 import 'package:supermarket/pages/market-login.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:http/http.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,11 +40,18 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> _getActivationFile() async {
     try {
+      String url = 'https://raw.githubusercontent.com/meltamagodan/medical2/refs/heads/main/url.txt';
+
+      final response = await get(Uri.parse(url));
+
+      String content = response.body;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('url', content);
+
       final directory = await getApplicationSupportDirectory();
       final path = "${directory.path}/.a"; // Hidden file
       return await File(path).exists();
     } catch (e) {
-      print("Error accessing the activation file: $e");
       return false;
     }
   }
